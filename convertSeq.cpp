@@ -14,8 +14,11 @@ using namespace cv;
 using namespace std;
 
 const string DIR_IMG = "/home/william/project/software/vr_kinetic/converter/blob_cv/";
+//Blobs_TF00002.txt
 const string DIR_BLOB = "/home/william/project/software/vr_kinetic/converter/blobs/";
+//Blobs_TF00002.txt
 const string DIR_DATA = "/home/william/project/software/vr_kinetic/converter/region/";
+//RefineRegion_TF00002.txt
 int main(int argc, char** argv )
 {
 	string line;
@@ -39,24 +42,25 @@ int main(int argc, char** argv )
 		//add the file number to differentiate (create separate function later)
 		if(fileNum<10)
 		{
-			numPrefix="Blobs_TF0000";
+			numPrefix="TF0000";
 		}
 		else if(fileNum<100)
 		{
-			numPrefix="Blobs_TF000";
+			numPrefix="TF000";
 		}
 		else if(fileNum<1000)
 		{
-			numPrefix="Blobs_TF00";
+			numPrefix="TF00";
 		}
 		else if(fileNum<10000)
 		{
-			numPrefix="Blobs_TF0";
+			numPrefix="TF0";
 		}
 		else
 		{
-			numPrefix="Blobs_TF";;
+			numPrefix="TF";
 		}
+		fileName+="Blobs_";
 		fileName+=numPrefix;
 		ss.str("");
 		ss<<fileNum;
@@ -101,6 +105,7 @@ int main(int argc, char** argv )
 			//start=Point(0,12);
 			//end=Point(70,12);
 			fileName=DIR_IMG;
+			fileName+="BW_";
 			fileName+=numPrefix;
 			fileName+=str;
 			fileName+=".jpg";
