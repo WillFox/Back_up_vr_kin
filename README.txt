@@ -10,6 +10,13 @@ Developed for the analysis of blobDetection_1T_seq output which
 has been integrated with ADIOS/EVPATH/ICEE in order to analyse
 blobs that have been detected.
 
+COMPILE:
+~$: g++ -o <executable> convertSeq.cpp `pkg-config opencv --cflags --libs`
+
+RUN:
+~$: ./<executable>
+
+
 Structure
 blobDetection_1T_seq/
 	blobdetection 
