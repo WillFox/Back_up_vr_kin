@@ -33,6 +33,7 @@ int main(int argc, char** argv )
 	int yLength=75;	//The height of the image
 	unsigned char bits[5625] = {0};
 	unsigned char bits2[5625] = {0};
+	unsigned char bits3[5625] = {0};
 	std::string fileName = DIR_BLOB;
 	int xBlob=0;
 	int yBlob=0;
@@ -116,6 +117,7 @@ int main(int argc, char** argv )
 				}
 			}
 			Mat m2( xLength,yLength, CV_8UC1, bits2 );
+			Mat m3( xLength,yLength, CV_8UC3, bits2 );
 			bool extracting=true;
 			while(extracting)
 			{	
@@ -163,10 +165,10 @@ int main(int argc, char** argv )
 			Mat right(m,Rect(xLength,0,xLength,yLength));
 			m2.copyTo(right);
 			//line(m, Point(0,12), Point(70,12), Scalar(100,100,0), thickness, lineType);
-			imwrite(fileName,m);
+			//imwrite(fileName,m);
 			namedWindow("Display Image", WINDOW_NORMAL);
 			imshow("Display Image", m );
-			waitKey(100);	
+			waitKey(60);	
 			//cout<<sizeof m<<endl;
 		}
 
