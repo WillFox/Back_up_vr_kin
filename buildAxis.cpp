@@ -124,7 +124,7 @@ int main(int argc, char** argv )
 			for (int k = 0 ;k<yLength*xLength;k++)
 			{
 				dataPoints>>a;
-				temp=pow(a,1.5)*60;//a*a*90;//pow(a,6);
+				temp=pow(a,1.3)*70;//a*a*90;//pow(a,6);
 				if(temp>=255)
 				{
 					bits[3*k]=0;//Blue
@@ -140,31 +140,6 @@ int main(int argc, char** argv )
 				//printf("%lf:  %u;%u;%u\n", temp, bits[k*3],bits[k*3+1],bits[k*3+2]);
 			}
 			Mat m( xLength,yLength, CV_8UC3, bits );
-			//Extract blobs detected
-			bool extracting=true;	
-			while(extracting)
-			{	
-				if(getline (interestPoints, line,' '))
-				{
-					xBlob=atoi(line.c_str());
-				}
-				if(getline (interestPoints, line,'\n'))
-				{
-					yBlob=atoi(line.c_str());
-				}
-				else
-				{
-					if(notate==true)
-					{
-						cout << "Extraction finishing..."<<endl;	
-					}
-					extracting=false;
-				}
-				bits[xBlob*3+yBlob*xLength*3]=0;//Blue
-				bits[xBlob*3+yBlob*xLength*3+1]=255;//Green
-				bits[xBlob*3+yBlob*xLength*3+2]=255;//Red
-			}
-			interestPoints.close();
 			dataPoints.close();
 			if(notate==true)
 			{
@@ -197,25 +172,61 @@ int main(int argc, char** argv )
 			Mat src;
 			src=mLarge;
 			dst=src.clone();
-   			/// Applying Homogeneous blur
-   			for ( int i = 1; i < MAX_KERNEL_LENGTH-9; i = i + 2 )
-       			{ blur( src, mLarge, Size( i, i ), Point(-1,-1) );
-       			}
-    		/// Applying Gaussian blur
-    		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-        	//	{ GaussianBlur( src, dst, Size( i, i ), 0, 0 );
-        	//	}			
-     		/// Applying Median blur
-     		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-         	//	{ medianBlur ( src, dst, i ); 
-         	//	}			
-     		/// Applying Bilateral Filter}			
-     		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-         	//	{ bilateralFilter ( src, dst, i, i*2, i/2 );
-         	//	}
+			int i;
+   			/// Applying Homogeneous blur (dulls the highs and lows)
+   			i = 21;//max=MAX_KERNAL_LENGTH and must be odd
+   			blur( src, mLarge, Size( i, i ), Point(-1,-1) );
+       		i = 23;
+       		blur( src, mLarge, Size( i, i ), Point(-1,-1) );
+    		/// Applying Gaussian blur (Very slow compared to homogeneous)
+    		//i=25;//max=MAX_KERNAL_LENGTH and must be odd
+        	//GaussianBlur( src, mLarge, Size( i, i ), 0, 0 );			
+     		/// Applying Median blur (Very slow compared to Gaussian 
+     		/// and shows discontinuous gradient (might be a good thing though))
+         	//i=29;//max=MAX_KERNAL_LENGTH and must be odd
+         	//medianBlur ( src, mLarge, i );		
+     		/// Applying Bilateral Filter (By far the slowest algorithm of these 4)	
+     		//i = 21;//max=MAX_KERNAL_LENGTH and must be odd
+         	//bilateralFilter ( dst, mLarge, i, i*2, i/2 );
 
 			//line(m, Point(0,12), Point(70,12), Scalar(100,100,0), thickness, lineType);
-			//imwrite(fileName,m);
+			
+			//Extract and mark blobs detected
+			bool extracting=true;	
+			while(extracting)
+			{	
+				xBlob=-1;
+				yBlob=-1;
+				if(getline (interestPoints, line,' '))
+				{
+					xBlob=atoi(line.c_str());
+				}
+				if(getline (interestPoints, line,'\n'))
+				{
+					yBlob=atoi(line.c_str());
+				}
+				else
+				{
+					if(notate==true)
+					{
+						cout << "Extraction finishing..."<<endl;	
+					}
+					extracting=false;
+				}
+				if(xLength!=-1 && yBlob!=-1)
+				{
+					circle(mLarge,
+						Point((int) (xBlob*1.0/xLength*mLarge.cols),(int)(yBlob*1.0/yLength*mLarge.rows)),
+						3.0,//radius
+						Scalar(0,0,255),//color
+						2,//thickness
+						8);//linetype
+				}
+				//bits[xBlob*3+yBlob*xLength*3]=0;//Blue
+				//bits[xBlob*3+yBlob*xLength*3+1]=255;//Green
+				//bits[xBlob*3+yBlob*xLength*3+2]=255;//Red
+			}
+			interestPoints.close();
 			namedWindow("Display Image",CV_WINDOW_AUTOSIZE);//, WINDOW_NORMAL);
 			
 			int top,bottom,left,right;
@@ -246,9 +257,9 @@ int main(int argc, char** argv )
 
 			//CREATE AXIS
 			putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
-
+			//imwrite(fileName,dst);
 			imshow("Display Image", dst );
-			waitKey(100);	
+			waitKey(50);	
 			//cout<<sizeof m<<endl;
 		}
 
