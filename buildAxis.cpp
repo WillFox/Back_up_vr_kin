@@ -39,8 +39,8 @@ int main(int argc, char** argv )
 	std::string fileName = DIR_BLOB;
 	int xBlob=0;
 	int yBlob=0;
-	int fileNum=76;//data file to start at ***IMPORTANT TO SET CORRECTLY***
-	int totalFiles=76;
+	int fileNum=1;//data file to start at ***IMPORTANT TO SET CORRECTLY***
+	int totalFiles=100;
 	string numPrefix="0";
 	std::stringstream ss;
 	unsigned char gradient[765];
@@ -57,7 +57,7 @@ int main(int argc, char** argv )
 		{
 			gradient[3*i]=-255*log10((double)(i+30)/300)+(cos((double) 2*i*3.141592/255+3.141592)+1)*30;//Blue
 			gradient[3*i+1]=(cos((double) 2*i*3.141592/255+3.141592)+1)*127;//Green
-			gradient[3*i+2]=pow((double) i/48.0,(double) 3.0);//Red
+			gradient[3*i+2]=pow((double) i/41.0,(double) 3.0);//Red
 		}
 		printf("%u;%u;%u\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
 
@@ -135,7 +135,7 @@ int main(int argc, char** argv )
 				{
 					bits[3*k]=-255*log10((double)(temp+30)/300)+(cos((double) 2*temp*3.141592/255+3.141592)+1)*30;//Blue
 					bits[3*k+1]=(cos((double)2*temp*3.141592/255+3.141592)+1)*127;//Green
-					bits[3*k+2]=pow((double) temp/48.0,(double) 3);//pow(temp/40.0,3);//Red
+					bits[3*k+2]=pow((double) temp/41.0,(double) 3);//pow(temp/40.0,3);//Red
 				}
 				//printf("%lf:  %u;%u;%u\n", temp, bits[k*3],bits[k*3+1],bits[k*3+2]);
 			}
@@ -198,9 +198,9 @@ int main(int argc, char** argv )
 			src=mLarge;
 			dst=src.clone();
    			/// Applying Homogeneous blur
-   			//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-       		//	{ blur( src, dst, Size( i, i ), Point(-1,-1) );
-       		//	}
+   			for ( int i = 1; i < MAX_KERNEL_LENGTH-9; i = i + 2 )
+       			{ blur( src, mLarge, Size( i, i ), Point(-1,-1) );
+       			}
     		/// Applying Gaussian blur
     		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
         	//	{ GaussianBlur( src, dst, Size( i, i ), 0, 0 );
@@ -248,7 +248,7 @@ int main(int argc, char** argv )
 			putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
 
 			imshow("Display Image", dst );
-			waitKey(0);	
+			waitKey(100);	
 			//cout<<sizeof m<<endl;
 		}
 
