@@ -29,6 +29,7 @@ RNG rng(12345);
 
 int main(int argc, char** argv )
 {
+
 	string line;
 	bool notate = true;//prints information related to program progress
 	int xLength=75;	//The length of the image
@@ -39,9 +40,28 @@ int main(int argc, char** argv )
 	int xBlob=0;
 	int yBlob=0;
 	int fileNum=1;//data file to start at ***IMPORTANT TO SET CORRECTLY***
-	int totalFiles=100;
+	int totalFiles=2;
 	string numPrefix="0";
 	std::stringstream ss;
+	char gradient[765];
+	//CREATE GRADIENT BAR ON SIDE OF GRAPH
+	for(int i = 0;i<255;i+=1)
+	{
+		if(i>=255)
+		{
+			gradient[3*i]=0;//Blue
+			gradient[3*i+1]=0;//Green
+			gradient[3*i+2]=255;//Red
+		}
+		else
+		{
+			gradient[3*i]=-255*log10((double)i/260);//Blue
+			gradient[3*i+1]=(cos(2*i*3.141592/255+3.141592)+1)*20;//Green
+			gradient[3*i+2]=pow(i/16.5,2);//Red
+		}
+		//printf("%d;%d;%d\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
+
+	}
 	//go through files in data folder one at a time
 	for(fileNum;fileNum < totalFiles+1;fileNum++)
 	{
@@ -107,89 +127,15 @@ int main(int argc, char** argv )
 				temp=a*a*90;
 				if(temp>=255)
 				{
-					bits[3*k]=60;//Blue
-					bits[3*k+1]=120;//Green
+					bits[3*k]=0;//Blue
+					bits[3*k+1]=0;//Green
 					bits[3*k+2]=255;//Red
 				}
 				else
 				{
-					/*
-					Basis of algorithm from:
-					Tanner Helland
-					How to convert temperature (K) to RGB: Algorithm and sample code 
-					www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
-					*/
-					//calculate BLUE
-					if(temp <= 66)
-					{
-						bits[3*k]=255;
-					}
-					else
-					{
-						bits[3*k]=temp-60;
-						bits[3*k]=329.698727446 * pow(bits[3*k],-0.1332047592);
-						if(bits[3*k]<0)
-						{
-							bits[3*k]=0;
-						}
-						if(bits[3*k]>255)
-						{
-							bits[3*k]=255;
-						}
-					}
-					//calculate GREEN
-					if(temp<=66)
-					{
-						bits[3*k+1]=temp;
-						bits[3*k+1]=99.4708025861 * log(bits[3*k+1]) - 161.1195681661;
-						if(bits[3*k+1]<0)
-						{
-							bits[3*k+1]=0;
-						}
-						if(bits[3*k+1]>255)
-						{
-							bits[3*k+1]=255;
-						}
-					}
-					else
-					{
-						bits[3*k+1]=temp-60;
-						bits[3*k+1]=288.1221695283 * pow(bits[3*k+1], -0.0755148492);
-						if(bits[3*k+1]<0)
-						{
-							bits[3*k+1]=0;
-						}
-						if(bits[3*k+1]>255)
-						{
-							bits[3*k+1]=255;
-						}
-					}
-					//calculate RED
-					if( temp >=66)
-					{
-						bits[3*k+2]=255;
-					}
-					else
-					{
-						if( temp<=19)
-						{
-							bits[3*k+2]=0;
-						}
-						else
-						{
-							bits[3*k+2]=temp-10;
-							bits[3*k+2]=138.5177312231 * log(bits[3*k+2]) - 305.0447927307;
-							if(bits[3*k+2]<0)
-							{
-								bits[3*k+2]=0;
-							}
-							if(bits[3*k+2]>255)
-							{
-								bits[3*k+2]=255;
-							}
-						}
-
-					}
+					bits[3*k]=-255*log10((double)temp/260);//Blue
+					bits[3*k+1]=(cos(2*temp*3.141592/255+3.141592)+1)*20;//Green
+					bits[3*k+2]=pow(temp/16.5,2);//Red
 				}
 			}
 			Mat m( xLength,yLength, CV_8UC3, bits );
@@ -239,8 +185,34 @@ int main(int argc, char** argv )
 			Mat mLarge, dst;
 			Size size(600,600);
 			resize(m,mLarge,size);
-			Size blurSize(1,5);
-			blur(mLarge,mLarge,blurSize);
+			Size blurSize(5,5);
+			//blur(mLarge,mLarge,blurSize);
+			
+
+			//TEST DIFFERENT BLUR METHODS
+			int MAX_KERNEL_LENGTH = 31;
+			int DELAY_BLUR=100;
+			int DELAY_CAPTION = 1500;
+			Mat src;
+			src=mLarge;
+			dst=src.clone();
+   			/// Applying Homogeneous blur
+   			//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+       		//	{ blur( src, dst, Size( i, i ), Point(-1,-1) );
+       		//	}
+    		/// Applying Gaussian blur
+    		for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+        		{ GaussianBlur( src, dst, Size( i, i ), 0, 0 );
+        		}			
+     		/// Applying Median blur
+     		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+         	//	{ medianBlur ( src, dst, i ); 
+         	//	}			
+     		/// Applying Bilateral Filter}			
+     		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+         	//	{ bilateralFilter ( src, dst, i, i*2, i/2 );
+         	//	}
+
 			//line(m, Point(0,12), Point(70,12), Scalar(100,100,0), thickness, lineType);
 			//imwrite(fileName,m);
 			namedWindow("Display Image",CV_WINDOW_AUTOSIZE);//, WINDOW_NORMAL);
@@ -256,11 +228,23 @@ int main(int argc, char** argv )
 			value = Scalar(255,255,255,255);
 			copyMakeBorder( mLarge,dst,top,bottom,left,right,borderType, value);
 			
-			//CREATE AXIS
-			putText(dst,"Relative Density for Poloidal Plane",Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
+			//ADD GRADIENT
+			Mat gradImg(255,500,CV_8UC3,Scalar(0,0,255));
+			for(int n=0 ; n<255;n+=1)
+			{
+				for( int m = 0 ; m < 500 ; m+=1)
+				{
+					gradImg.at<Vec3b>(n,m)[0]=gradient[(3*n)+0];
+					gradImg.at<Vec3b>(n,m)[1]=gradient[(3*n)+1];
+					gradImg.at<Vec3b>(n,m)[2]=gradient[(3*n)+2];
+				}
+			}
 
-			imshow("Display Image", dst );
-			waitKey(100);	
+			//CREATE AXIS
+			putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
+
+			imshow("Display Image", gradImg );
+			waitKey(0);	
 			//cout<<sizeof m<<endl;
 		}
 
