@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <stdio.h>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
@@ -23,6 +24,7 @@ const string BLOB_PREF = "Blobs_";
 //ex:Blobs_TF00002.txt
 const string DIR_DATA = "/home/william/project/software/vr_kinetic/converter/region/";
 const string DATA_PREF = "RefineRegion_";
+RNG rng(12345);
 //ex:RefineRegion_TF00002.txt
 
 int main(int argc, char** argv )
@@ -234,15 +236,30 @@ int main(int argc, char** argv )
 			{
 				cout << fileName << endl;
 			}
-			Mat mLarge;
-			Size size(225,225);
+			Mat mLarge, dst;
+			Size size(600,600);
 			resize(m,mLarge,size);
-			Size blurSize(1,1);
+			Size blurSize(1,5);
 			blur(mLarge,mLarge,blurSize);
 			//line(m, Point(0,12), Point(70,12), Scalar(100,100,0), thickness, lineType);
 			//imwrite(fileName,m);
-			namedWindow("Display Image", WINDOW_NORMAL);
-			imshow("Display Image", mLarge );
+			namedWindow("Display Image",CV_WINDOW_AUTOSIZE);//, WINDOW_NORMAL);
+			
+			int top,bottom,left,right;
+			top = (int) (0.10*mLarge.rows); bottom = (int) (0.15*mLarge.rows);
+			left = (int) (0.25*mLarge.cols); right = (int) (0.2*mLarge.cols);
+			
+			dst=mLarge;
+			int borderType=BORDER_CONSTANT;
+			Scalar value;
+			value = Scalar(rng.uniform(0,255), rng.uniform(0,255), rng.uniform(0,255), rng.uniform(0,255));
+			value = Scalar(255,255,255,255);
+			copyMakeBorder( mLarge,dst,top,bottom,left,right,borderType, value);
+			
+			//CREATE AXIS
+			putText(dst,"Relative Density for Poloidal Plane",Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
+
+			imshow("Display Image", dst );
 			waitKey(100);	
 			//cout<<sizeof m<<endl;
 		}
