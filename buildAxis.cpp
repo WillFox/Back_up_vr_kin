@@ -39,11 +39,11 @@ int main(int argc, char** argv )
 	std::string fileName = DIR_BLOB;
 	int xBlob=0;
 	int yBlob=0;
-	int fileNum=1;//data file to start at ***IMPORTANT TO SET CORRECTLY***
-	int totalFiles=2;
+	int fileNum=76;//data file to start at ***IMPORTANT TO SET CORRECTLY***
+	int totalFiles=76;
 	string numPrefix="0";
 	std::stringstream ss;
-	char gradient[765];
+	unsigned char gradient[765];
 	//CREATE GRADIENT BAR ON SIDE OF GRAPH
 	for(int i = 0;i<255;i+=1)
 	{
@@ -55,11 +55,11 @@ int main(int argc, char** argv )
 		}
 		else
 		{
-			gradient[3*i]=-255*log10((double)i/260);//Blue
-			gradient[3*i+1]=(cos(2*i*3.141592/255+3.141592)+1)*20;//Green
-			gradient[3*i+2]=pow(i/16.5,2);//Red
+			gradient[3*i]=-255*log10((double)(i+30)/300)+(cos((double) 2*i*3.141592/255+3.141592)+1)*30;//Blue
+			gradient[3*i+1]=(cos((double) 2*i*3.141592/255+3.141592)+1)*127;//Green
+			gradient[3*i+2]=pow((double) i/48.0,(double) 3.0);//Red
 		}
-		//printf("%d;%d;%d\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
+		printf("%u;%u;%u\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
 
 	}
 	//go through files in data folder one at a time
@@ -124,19 +124,20 @@ int main(int argc, char** argv )
 			for (int k = 0 ;k<yLength*xLength;k++)
 			{
 				dataPoints>>a;
-				temp=a*a*90;
+				temp=pow(a,1.5)*60;//a*a*90;//pow(a,6);
 				if(temp>=255)
 				{
 					bits[3*k]=0;//Blue
 					bits[3*k+1]=0;//Green
-					bits[3*k+2]=255;//Red
+					bits[3*k+2]=170;//Red
 				}
 				else
 				{
-					bits[3*k]=-255*log10((double)temp/260);//Blue
-					bits[3*k+1]=(cos(2*temp*3.141592/255+3.141592)+1)*20;//Green
-					bits[3*k+2]=pow(temp/16.5,2);//Red
+					bits[3*k]=-255*log10((double)(temp+30)/300)+(cos((double) 2*temp*3.141592/255+3.141592)+1)*30;//Blue
+					bits[3*k+1]=(cos((double)2*temp*3.141592/255+3.141592)+1)*127;//Green
+					bits[3*k+2]=pow((double) temp/48.0,(double) 3);//pow(temp/40.0,3);//Red
 				}
+				//printf("%lf:  %u;%u;%u\n", temp, bits[k*3],bits[k*3+1],bits[k*3+2]);
 			}
 			Mat m( xLength,yLength, CV_8UC3, bits );
 			//Extract blobs detected
@@ -161,7 +162,7 @@ int main(int argc, char** argv )
 				}
 				bits[xBlob*3+yBlob*xLength*3]=0;//Blue
 				bits[xBlob*3+yBlob*xLength*3+1]=255;//Green
-				bits[xBlob*3+yBlob*xLength*3+2]=0;//Red
+				bits[xBlob*3+yBlob*xLength*3+2]=255;//Red
 			}
 			interestPoints.close();
 			dataPoints.close();
@@ -201,9 +202,9 @@ int main(int argc, char** argv )
        		//	{ blur( src, dst, Size( i, i ), Point(-1,-1) );
        		//	}
     		/// Applying Gaussian blur
-    		for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-        		{ GaussianBlur( src, dst, Size( i, i ), 0, 0 );
-        		}			
+    		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+        	//	{ GaussianBlur( src, dst, Size( i, i ), 0, 0 );
+        	//	}			
      		/// Applying Median blur
      		//for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
          	//	{ medianBlur ( src, dst, i ); 
@@ -230,20 +231,23 @@ int main(int argc, char** argv )
 			
 			//ADD GRADIENT
 			Mat gradImg(255,500,CV_8UC3,Scalar(0,0,255));
-			for(int n=0 ; n<255;n+=1)
+			
+			for(int n=0 ; n<510;n+=1)
 			{
-				for( int m = 0 ; m < 500 ; m+=1)
+				
+				for( int m = 0 ; m < 50 ; m+=1)
 				{
-					gradImg.at<Vec3b>(n,m)[0]=gradient[(3*n)+0];
-					gradImg.at<Vec3b>(n,m)[1]=gradient[(3*n)+1];
-					gradImg.at<Vec3b>(n,m)[2]=gradient[(3*n)+2];
+					dst.at<Vec3b>((int) (0.1*dst.rows+n),(int) (0.9*dst.cols+m))[0]=gradient[(int) (3*(n/2))+0];
+					dst.at<Vec3b>((int) (0.1*dst.rows+n),(int) (0.9*dst.cols+m))[1]=gradient[(int) (3*(n/2))+1];
+					dst.at<Vec3b>((int) (0.1*dst.rows+n),(int) (0.9*dst.cols+m))[2]=gradient[(int) (3*(n/2))+2];
+					//printf("%d;%d;%d\n",gradient[(int) (3*n/4)+0],gradient[(int) (3*n/4)+1],gradient[(int) (3*n/4)+2]);
 				}
 			}
 
 			//CREATE AXIS
 			putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
 
-			imshow("Display Image", gradImg );
+			imshow("Display Image", dst );
 			waitKey(0);	
 			//cout<<sizeof m<<endl;
 		}
