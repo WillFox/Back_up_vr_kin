@@ -59,7 +59,7 @@ int main(int argc, char** argv )
 			gradient[3*i+1]=(cos((double) 2*i*3.141592/255+3.141592)+1)*127;//Green
 			gradient[3*i+2]=pow((double) i/41.0,(double) 3.0);//Red
 		}
-		printf("%u;%u;%u\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
+		//printf("%u;%u;%u\n", gradient[i*3],gradient[i*3+1],gradient[i*3+2]);
 
 	}
 	//go through files in data folder one at a time
@@ -234,7 +234,7 @@ int main(int argc, char** argv )
 			pad_top = 0.10;
 			pad_bottom = 0.15;
 			pad_left = 0.25;
-			pad_right = 0.2;
+			pad_right = 0.25;
 			top = (int) (pad_top*mLarge.rows); bottom = (int) (pad_bottom*mLarge.rows);
 			left = (int) (pad_left*mLarge.cols); right = (int) (pad_right*mLarge.cols);
 			
@@ -248,14 +248,16 @@ int main(int argc, char** argv )
 			//ADD GRADIENT
 			Mat gradImg(255,500,CV_8UC3,Scalar(0,0,255));
 			//Nice to put this in memory rather than generating each timeframe
+			int index;
 			for(int n=0 ; n<mLarge.rows;n+=1)
 			{
-				
+				index=(int) 255.0*n/mLarge.rows;
+				//printf("%d\n",index);
 				for( int m = 0 ; m < 50 ; m+=1)
 				{
-					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+(1-pad_right*0.2)*mLarge.cols+m))[0]=gradient[(int) (3*(n/2))+0];
-					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+(1-pad_right*0.2)*mLarge.cols+m))[1]=gradient[(int) (3*(n/2))+1];
-					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+(1-pad_right*0.2)*mLarge.cols+m))[2]=gradient[(int) (3*(n/2))+2];
+					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+0.1*pad_right*mLarge.cols+m))[0]=gradient[(int) 3*index+0];
+					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+0.1*pad_right*mLarge.cols+m))[1]=gradient[(int) 3*index+1];
+					dst.at<Vec3b>((int) (pad_top*mLarge.rows+n),(int) (pad_left*mLarge.cols+mLarge.cols+0.1*pad_right*mLarge.cols+m))[2]=gradient[(int) 3*index+2];
 					//printf("%d;%d;%d\n",gradient[(int) (3*n/4)+0],gradient[(int) (3*n/4)+1],gradient[(int) (3*n/4)+2]);
 				}
 			}
@@ -267,16 +269,40 @@ int main(int argc, char** argv )
 			double minR = 2.25;
 			int labelX = 8;
 			int labelY = 12;
-
+			double label_add;
 			putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
 			//X Axis components
-			putText(dst,"0",Point((int) (0.9*pad_left*mLarge.cols),(int) (dst.rows-pad_bottom*0.75*mLarge.rows)),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
-			putText(dst,"0.5",Point((int) (pad_left*mLarge.cols+0.48*mLarge.cols),(int) (dst.rows-pad_bottom*0.75*mLarge.rows)),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
-			putText(dst,"1.0",Point((int) (pad_left*mLarge.cols+0.96*mLarge.cols),(int) (dst.rows-pad_bottom*0.75*mLarge.rows)),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
+			int xpoints;
+			for(xpoints=0;xpoints<=labelX;xpoints+=1)
+			{
+				label_add=(maxR-minR)/(1.0*labelX)*(labelX-xpoints)+minR;
+				ss.str("");
+				ss<<label_add;
+				std::string str = ss.str();
+				putText(dst,
+					str,
+					Point((int) (pad_left*mLarge.cols+(1.0*xpoints/labelX*mLarge.cols)-15),(int) (dst.rows-pad_bottom*0.75*mLarge.rows)),
+					CV_FONT_HERSHEY_SIMPLEX, 
+					0.5, 
+					Scalar(255),
+					1,8,false);
+			}
 			//Y Axis components
-			putText(dst,"0.5",Point((int) (0.7*pad_left*mLarge.cols),(int) (pad_top*mLarge.rows+0.5*mLarge.rows)),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
-			putText(dst,"1.0",Point((int) (0.7*pad_left*mLarge.cols),(int) (pad_top*mLarge.rows+0.02*mLarge.rows)),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
-			
+			int ypoints;
+			for(ypoints=0;ypoints<=labelY;ypoints+=1)
+			{
+				label_add=(maxZ-minZ)/(1.0*labelY)*(labelY-ypoints)+minZ;
+				ss.str("");
+				ss<<label_add;
+				std::string str = ss.str();
+				putText(dst,
+					str,
+					Point((int) (0.7*pad_left*mLarge.cols),(int) (pad_top*mLarge.rows+(1.0*ypoints/labelY)*mLarge.rows)),
+					CV_FONT_HERSHEY_SIMPLEX, 
+					0.5, 
+					Scalar(255),
+					1,8,false);
+			}
 			//putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
 			//putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
 			//putText(dst,"Relative Density for Poloidal Plane:"+numPrefix+str,Point((int) (mLarge.cols/2+0*mLarge.cols),50),CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255),1,8,false);
